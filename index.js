@@ -1,10 +1,10 @@
 const express = require('express')
 const bodyparser = require('body-parser')
-const { execFile } = require('child_process')
+const { execFile, exec } = require('child_process')
 const fs = require('fs')
 
 const app = express()
-port = process.env.PORT || 3000
+port = process.env.PORT || 8080
 
 app.use(express.static('public'))
 app.use(express.json()) 
@@ -53,28 +53,11 @@ app.get('/pp5.html',(req,res)=>{
 app.post('/s.html',(req,res)=>{
     res.render('s',{data:req.body})
 })
-const write = (data , n)=>{
-
-    const content = `
-            gcc program${n}.c 
-            ./a.out ${data}
-    `
-
-     fs.writeFile(`./p${n}.sh`, content, err => {
-       if (err) {
-         console.error(err)
-         return
-       }
-       //file written successfully
-     })
-}
-
 
 app.post('/prg',(req,res)=>{
 
-    write(req.body.content, req.body.n)
-    execFile(`./p${req.body.n}.sh`, (error, stdout, stderr) => {
-    if (error) {
+    exec(`gcc program${req.body.n}.c  && ./a.out ${req.body.content}`,(error,stdout,stderr)=>{
+        if (error) {
         console.log(`error: ${error.message}`)
         return
     }
@@ -84,9 +67,8 @@ app.post('/prg',(req,res)=>{
     }
     console.log(`stdout: ${stdout}`);
     res.render('s',{data:stdout, n:req.body.n})
-    });
+    })
 })
-
 
 app.listen(port, () => {
     console.log(`SERVER IS RUNNING ON PORT ${port}`);
